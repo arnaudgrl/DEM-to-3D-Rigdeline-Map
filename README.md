@@ -3,5 +3,5 @@ This repository provides resources for anyone to create a wooden representation 
 The main purpose of this repository is to provides an easy and simpler way to realise a Laser Cut 3D Ridgeline Map.
 
 # Useful Ressources : 
-  DEM provider for France regions : https://geoservices.ign.fr/bdalti
-  On demand Laser cut provider : https://www.troteclaser.com/fr/applications-laser/personnalisation
+DEM provider for France regions : https://geoservices.ign.fr/bdalti
+On demand Laser cut provider : https://www.troteclaser.com/fr/applications-laser/personnalisation
