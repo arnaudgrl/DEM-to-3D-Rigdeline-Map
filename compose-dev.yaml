@@ -1,0 +1,8 @@
+  python-script:
+    image: qgis:latest
+    build:
+      context: ./directory
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
