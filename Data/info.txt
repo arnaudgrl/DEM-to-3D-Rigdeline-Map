@@ -1,0 +1,4 @@
+maximum_map_size=300
+width=70
+
+# All values should be in mm unit.
