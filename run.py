@@ -1,18 +1,16 @@
-from qgis.core import QgsProject, QgsVectorLayer, QgsRasterLayer
+from qgis.core import QgsProject, QgsVectorLayer, QgsRasterLayer, QgsCoordinateTransform
 import os
 
-print(os.getcwd())
-
-from functions.gather_information import get_information
-from functions.extract_layer_extent import get_shape_size
+from DEMto3DRigdelineMap.functions.gather_information import get_information
+from DEMto3DRigdelineMap.functions.extract_layer_extent import get_shape_size
 
 # Replace the following paths with the actual paths in your Docker container
 # shape_path = '/app/Data/*.geojson'
 # raster_path = '/app/your_folder/*.tif'
 
-shape_path = 'C:/Users/arnau/OneDrive/Documents/Home/DEMto3DRigdelineMap/Data/departement-74-haute-savoie.geojson'
-raster_path = 'C:/Users/arnau/OneDrive/Documents/Home/DEMto3DRigdelineMap/Data/OUTPUT.tif'
-info_file_path = 'C:/Users/arnau/OneDrive/Documents/Home/DEMto3DRigdelineMap/Data/info.txt'  
+shape_path = 'C:/Users/arnau//Documents//DEMto3DRigdelineMap/Data/departement-74-haute-savoie.geojson'
+raster_path = 'C:/Users/arnau//Documents//DEMto3DRigdelineMap/Data/OUTPUT.tif'
+info_file_path = 'C:/Users/arnau//Documents//DEMto3DRigdelineMap/Data/info.txt'  
 
 # Now you have the value of maximum_map_size
 real_maximum_map_size, real_width = get_information(info_file_path)
