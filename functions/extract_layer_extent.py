@@ -1,6 +1,6 @@
 # File: extract_layer_extent.py
 
-from qgis.core import QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem,  QgsRectangle, QgsVectorLayer, QgsFeature, QgsField, QgsGeometry
+from qgis.core import QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayer, QgsFeature, QgsGeometry
 
 def get_shape_size(layer1):
     bounding_box_4326 = layer1.getFeature(0).geometry().boundingBox()

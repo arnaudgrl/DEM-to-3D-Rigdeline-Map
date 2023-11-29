@@ -1,5 +1,6 @@
-from qgis.core import QgsProject, QgsVectorLayer, QgsRasterLayer, QgsCoordinateTransform
+from qgis.core import QgsProject, QgsVectorLayer, QgsRasterLayer, QgsCoordinateTransform, QgsProperty
 import os
+from qgis import processing
 
 from DEMto3DRigdelineMap.functions.gather_information import get_information
 from DEMto3DRigdelineMap.functions.extract_layer_extent import get_shape_size
@@ -52,32 +53,76 @@ map_height = get_shape_size(layer1)     #441133m in example
 print(f"Map height {map_height} meters")
 m_per_mm = map_height / 300
 
-# Step 7: Create Grid
+# Step 7 & 8: Create Grid & Translate Grid
 grid_extent = 'extent_layer_shape'
 vertical_spacing = 3 * m_per_mm
 horizontal_spacing = map_height
-create_grid(grid_extent, vertical_spacing, horizontal_spacing)
-
-
-# Step 8: Translate Grid
+delta_y = -m_per_mm*1.5 
+create_grid(grid_extent, vertical_spacing, horizontal_spacing, delta_y)
 
 # Step 9: Clip the Grid
 
+processing.runAndLoadResults("native:clip", {'INPUT':"Translaté",
+                               'OVERLAY': shape_path,
+                               'OUTPUT':'clipped_grid_boundary'})
+
 # Step 10: Extract Vertices [Possibly Unnecessary]
+processing.runAndLoadResults("native:extractvertices", {'INPUT':'clipped_grid_boundary',
+                                                  'VERTICES':'0',
+                                                  'OUTPUT':'clipped_grid_boundary_vertices'})
 
 # Step 11: Points to Path [Possibly Unnecessary]
 
+processing.runAndLoadResults("native:pointstopath", {'INPUT':'clipped_grid_boundary_vertices',
+                                       'CLOSE_PATH':False,
+                                       'ORDER_EXPRESSION':'"vertex_index"',
+                                       'NATURAL_SORT':False,
+                                       'GROUP_EXPRESSION':'"id"',
+                                       'OUTPUT':'clipped_grid_vertices_to_path'})
+
 # Step 12: Simplify [Possibly Unnecessary]
+
+processing.runAndLoadResults("native:simplifygeometries", {'INPUT':'clipped_grid_vertices_to_path',
+                                             'METHOD':0,
+                                             'TOLERANCE':1,
+                                             'OUTPUT':'simplified_clipped_grid_boundary'})
 
 # Step 13: Points Along Geometry
 
+processing.runAndLoadResults("native:pointsalonglines", {'INPUT':'simplified_clipped_grid_boundary',
+                                           'DISTANCE':300,
+                                           'START_OFFSET':0,
+                                           'END_OFFSET':0,
+                                           'OUTPUT':'points_along_clipped_gridlines_300m'})
+
 # Step 14: Extract Specific Vertices
+
+processing.runAndLoadResults("native:extractspecificvertices", {'INPUT':'simplified_clipped_grid_boundary.gpkg',
+                                                  'VERTICES':'1',
+                                                  'OUTPUT':'clipped_gridline_right_vertex'})
 
 # Step 15: Merge Vector Layers
 
+processing.runAndLoadResults("native:mergevectorlayers", {'LAYERS':['clipped_gridline_right_vertex.gpkg','points_along_clipped_gridlines_300m.gpkg'],
+                                            'CRS':None,
+                                            'OUTPUT':'merged_points_along_line'})
+
 # Step 16: Sample Raster Values
 
+processing.runAndLoadResults("native:rastersampling", {'INPUT':'merged_points_along_line.gpkg',
+                                         'RASTERCOPY':raster_path,
+                                         'COLUMN_PREFIX':'elevation_',
+                                         'OUTPUT':'sampled_elevation_point_layer'})
+
 # Step 17: Translate Points
+
+processing.runAndLoadResults("native:arraytranslatedfeatures", {'INPUT':'sampled_elevation_point_layer.gpkg',
+                                                  'COUNT':10,
+                                                  'DELTA_X':0,
+                                                  'DELTA_Y':QgsProperty.fromExpression('if("elevation_1"<=0,'+ str(-0.3*m_per_mm)+',"elevation_1"*'+str(real_width/100*m_per_mm)+'/maximum("elevation_1"))'),
+                                                  'DELTA_Z':0,
+                                                  'DELTA_M':0,
+                                                  'OUTPUT':'translated_sampled_elevation_point_layer'})
 
 # Step 18: Rewind: Translate an Earlier Layer
 
