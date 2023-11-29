@@ -3,6 +3,7 @@ import os
 
 from DEMto3DRigdelineMap.functions.gather_information import get_information
 from DEMto3DRigdelineMap.functions.extract_layer_extent import get_shape_size
+from DEMto3DRigdelineMap.functions.grid import create_grid
 
 # Replace the following paths with the actual paths in your Docker container
 # shape_path = '/app/Data/*.geojson'
@@ -14,6 +15,7 @@ info_file_path = 'C:/Users/arnau//Documents//DEMto3DRigdelineMap/Data/info.txt'
 
 # Now you have the value of maximum_map_size
 real_maximum_map_size, real_width = get_information(info_file_path)
+physical_millimiters = 300
 
 # Now you have the values of maximum_map_size and width
 print(f"Maximum Map Size: {real_maximum_map_size}")
@@ -45,13 +47,17 @@ else:
     # Add raster layer to the project
     QgsProject.instance().addMapLayer(layer2)
 
-
-
 # Step 6: Extract Layer Extent --> Check extract_layer_extent for more information
-width = get_shape_size(layer1)
-print(f"Maximum size {width} meters")
+map_height = get_shape_size(layer1)     #441133m in example
+print(f"Map height {map_height} meters")
+m_per_mm = map_height / 300
 
 # Step 7: Create Grid
+grid_extent = 'extent_layer_shape'
+vertical_spacing = 3 * m_per_mm
+horizontal_spacing = map_height
+create_grid(grid_extent, vertical_spacing, horizontal_spacing)
+
 
 # Step 8: Translate Grid
 
