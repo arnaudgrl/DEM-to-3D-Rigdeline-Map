@@ -126,7 +126,17 @@ processing.runAndLoadResults("native:arraytranslatedfeatures", {'INPUT':'sampled
 
 # Step 18: Rewind: Translate an Earlier Layer
 
+processing.runAndLoadResults("native:translategeometry", {'INPUT':'simplified_clipped_grid_boundary.gpkg',
+                                            'DELTA_X':0,
+                                            'DELTA_Y':-6*m_per_mm,
+                                            'DELTA_Z':0,
+                                            'DELTA_M':0,
+                                            'OUTPUT':'translated_baseline_lines'})
+
 # Step 19: More Extracted Vertices and Field Calculating!
+
+processing.runAndLoadResults("native:extractvertices", {'INPUT':'translated_sampled_elevation_point_layer.gpkg',
+                                          'OUTPUT':'baseline_points'})
 
 # Step 20: Merge Layers
 
