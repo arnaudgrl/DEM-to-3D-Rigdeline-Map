@@ -1,4 +1,4 @@
 maximum_map_size=300
-width=70
+width=50
 
 # All values should be in mm unit.

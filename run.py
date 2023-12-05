@@ -19,8 +19,8 @@ real_maximum_map_size, real_width = get_information(info_file_path)
 physical_millimiters = 300
 
 # Now you have the values of maximum_map_size and width
-print(f"Maximum Map Size: {real_maximum_map_size}")
-print(f"Width: {real_width}")
+# print(f"Maximum Map Size: {real_maximum_map_size}")
+# print(f"Width: {real_width}")
 
 osm_layer_name = 'OSM Standard'
 for layer_id, layer in QgsProject.instance().mapLayers().items():
@@ -50,8 +50,8 @@ else:
 
 # Step 6: Extract Layer Extent --> Check extract_layer_extent for more information
 map_height = get_shape_size(layer1)     #441133m in example
-print(f"Map height {map_height} meters")
-m_per_mm = map_height / 300
+# print(f"Map height {map_height} meters")
+m_per_mm = map_height / 400
 
 # Step 7 & 8: Create Grid & Translate Grid
 grid_extent = 'extent_layer_shape'
@@ -138,11 +138,32 @@ processing.runAndLoadResults("native:translategeometry", {'INPUT':'simplified_cl
 processing.runAndLoadResults("native:extractvertices", {'INPUT':'translated_sampled_elevation_point_layer.gpkg',
                                           'OUTPUT':'baseline_points'})
 
+layer = iface.activeLayer()
+layer.startEditing()
+id_col= layer.dataProvider().fieldNameIndex("distance")
+for feature in layer.getFeatures():
+    layer.changeAttributeValue(feature.id(), id_col, (feature.attribute("distance")+1)*(-1) )
+layer.commitChanges()
+
 # Step 20: Merge Layers
+
+processing.runAndLoadResults("native:mergevectorlayers", {'LAYERS':['baseline_points.gpkg','translated_sampled_elevation_point_layer.gpkg'],
+                                            'CRS':None,
+                                            'OUTPUT':'ridgeline_and_baseline_points'})
 
 # Step 21: Points to Path
 
+processing.runAndLoadResults("native:pointstopath", {'INPUT':'ridgeline_and_baseline_points.gpkg',
+                                       'CLOSE_PATH':True,
+                                       'ORDER_EXPRESSION':'"distance"',
+                                       'NATURAL_SORT':False,
+                                       'GROUP_EXPRESSION':'"id"',
+                                       'OUTPUT':'ridgeline_and_baseline_outlines'})
+
 # Step 22: Lines to Polygons
+
+processing.runAndLoadResults("qgis:linestopolygons", {'INPUT':'ridgeline_and_baseline_outlines.gpkg',
+                                        'OUTPUT':'ridgeline_and_baseline_polygons'})
 
 # Step 23: Translate Polygons
 
