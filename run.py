@@ -116,10 +116,10 @@ processing.runAndLoadResults("native:rastersampling", {'INPUT':'merged_points_al
 
 # Step 17: Translate Points
 
-processing.runAndLoadResults("native:arraytranslatedfeatures", {'INPUT':'sampled_elevation_point_layer.gpkg',
+processing.runAndLoadResults("native:translategeometry", {'INPUT':'sampled_elevation_point_layer.gpkg',
                                                   'COUNT':10,
                                                   'DELTA_X':0,
-                                                  'DELTA_Y':QgsProperty.fromExpression('if("elevation_1"<=0,'+ str(-0.3*m_per_mm)+',"elevation_1"*'+str(real_width/100*m_per_mm)+'/maximum("elevation_1"))'),
+                                                  'DELTA_Y':QgsProperty.fromExpression('if("elevation_1"<=0,-441.12,"elevation_1"*5881.6/maximum("elevation_1"))'),
                                                   'DELTA_Z':0,
                                                   'DELTA_M':0,
                                                   'OUTPUT':'translated_sampled_elevation_point_layer'})
@@ -135,7 +135,7 @@ processing.runAndLoadResults("native:translategeometry", {'INPUT':'simplified_cl
 
 # Step 19: More Extracted Vertices and Field Calculating!
 
-processing.runAndLoadResults("native:extractvertices", {'INPUT':'translated_sampled_elevation_point_layer.gpkg',
+processing.runAndLoadResults("native:extractvertices", {'INPUT':'translated_baseline_lines.gpkg',
                                           'OUTPUT':'baseline_points'})
 
 layer = iface.activeLayer()
@@ -167,7 +167,21 @@ processing.runAndLoadResults("qgis:linestopolygons", {'INPUT':'ridgeline_and_bas
 
 # Step 23: Translate Polygons
 
+processing.runAndLoadResults("native:translategeometry", {'INPUT':'ridgeline_and_baseline_polygons.gpkg',
+                                            'DELTA_X':0,
+                                            'DELTA_Y':QgsProperty.fromExpression('"id" * 3 * -5881.6'),
+                                            'DELTA_Z':0,
+                                            'DELTA_M':0,
+                                            'OUTPUT':'translated_polygons'})
+
 # Step 24: More Translation!
+
+processing.runAndLoadResults("native:translategeometry", {'INPUT':'translated_baseline_lines.gpkg',
+                                            'DELTA_X':0,
+                                            'DELTA_Y':QgsProperty.fromExpression('"id" * 3 * -5881.6'),
+                                            'DELTA_Z':0,
+                                            'DELTA_M':0,
+                                            'OUTPUT':'super_translated_baseline_lines'})
 
 # Step 25: Alignment Lines
 
